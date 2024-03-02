@@ -11,11 +11,11 @@ def main():
     # Define the model
     layers = [
         FullyConnected(6, 32),
-        Tanh(),
+        ReLU(),
         FullyConnected(32, 32),
-        Tanh(),
+        ReLU(),
         FullyConnected(32, 32),
-        Tanh(),
+        ReLU(),
         FullyConnected(32, 3),
         Tanh(),
     ]
@@ -23,19 +23,25 @@ def main():
     learning_rate = 0.1
     model = Model(layers, loss, learning_rate)
 
-    # Get data for training and testing
-    dataloader = CSVDataLoader("dataset_0.csv", set_ratios=[7, 3], batch_size=4, shuffle=True)
+    # Get training and testing sets
+    dataloader = CSVDataLoader(
+        "dataset_2.csv",
+        set_ratios=[7, 3, 15], # Randomly throw out some data
+        batch_size=16,
+        shuffle=True,
+    )
     training_set = dataloader.get_set(0)
-    test_set = dataloader.get_set(1)
+    testing_set = dataloader.get_set(1)
 
     # Combine test_set into a single array
-    test_set = np.concatenate(test_set, axis=0)
+    testing_set = np.concatenate(testing_set, axis=0)
 
     # Train and test
-    epochs = 3
+    epochs = 5
     training_loss = []
     testing_loss = []
     for i in range(epochs):
+        learning_rate *= 0.75 # Decay learning rate for higher epochs
         for j, batch in enumerate(training_set):
             X = batch[:, :6]
             y = batch[:, 6:]
@@ -45,8 +51,8 @@ def main():
             if j % 5 == 0:
                 training_loss.append(data_loss)
 
-                X = test_set[:, :6]
-                y = test_set[:, 6:]
+                X = testing_set[:, :6]
+                y = testing_set[:, 6:]
                 y_pred = model.predict(X)
                 data_loss = loss.forward(y_pred, y)
                 testing_loss.append(data_loss)
