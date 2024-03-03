@@ -23,3 +23,20 @@ class CSVDataLoader:
     def get_set(self, set_id=0):
         # Returns a list of numpy arrays representing batches
         return self.datasets[set_id]
+
+    def get_set_array(self, set_id=0):
+        # Returns the set as a large concatenated array
+        return np.concatenate(self.datasets[set_id], axis=0)
+    
+def save_array(array, name, header):
+    with open(f"{name}.csv", "w") as f:
+        f.write(f"{header}\n")
+        for row in array:
+            for i, val in enumerate(row):
+                f.write(f"{val}")
+
+                if i != len(row) - 1:
+                    f.write(", ")
+                else:
+                    f.write("\n")
+
